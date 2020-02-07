@@ -27,17 +27,17 @@ class _MyAppState extends State<MyApp> {
                   id: 'n0',
                   label: 'A node',
                   position: Vector2(0, 0),
-                  radius: 3),
+                  radius: 30),
               Node(
                   id: 'n1',
                   label: 'Another node',
-                  position: Vector2(30, 10),
-                  radius: 2),
+                  position: Vector2(300, 100),
+                  radius: 20),
               Node(
                   id: 'n2',
                   label: 'And a last one',
-                  position: Vector2(10, 30),
-                  radius: 1)
+                  position: Vector2(100, 300),
+                  radius: 10)
             ], edges: [
               Edge(id: 'e0', source: 'n0', target: 'n1'),
               Edge(id: 'e1', source: 'n1', target: 'n2'),

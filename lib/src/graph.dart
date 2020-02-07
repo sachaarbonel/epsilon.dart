@@ -10,7 +10,7 @@ class Node {
   final double radius;
   Node({this.id, this.label, this.position, this.radius});
 
-  void drawNode(Canvas canvas, MaterialColor materialColor) {
+  void drawNode(Canvas canvas, Color materialColor) {
     final paint = Paint()
       ..color = materialColor
       ..style = PaintingStyle.stroke
@@ -100,7 +100,7 @@ class Sigma extends StatelessWidget {
         onSelected(-1);
       },
       child: CustomPaint(
-        // size: Size(320, 240),
+        size: Size(320, 240),
         painter: GraphPainter(graph: graph, selectedIndex: selectedIndex),
       ),
     );
