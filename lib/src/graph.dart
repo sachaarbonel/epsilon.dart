@@ -10,28 +10,31 @@ class Node {
   final double radius;
   Node({this.id, this.label, this.position, this.radius});
 
-  void drawNode(Canvas canvas, Color materialColor) {
+  void drawNode(
+      Canvas canvas, Color color, double zoom, Size size, Offset offset) {
     final paint = Paint()
-      ..color = materialColor
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0;
 
     canvas.drawCircle(Offset(position.x, position.y), radius, paint);
   }
 
-  void drawEdge(Canvas canvas, Node target) {
+  void drawEdge(
+      Canvas canvas, Node target, double zoom, Size size, Offset offset) {
     final paint = Paint()
       ..color = Colors.redAccent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0; //TODO: Stroke settings
     final path = Path()
-      ..moveTo(position.x, position.y)
-      ..lineTo(target.position.x, target.position.y)
+      ..moveTo(position.x * zoom, position.y * zoom)
+      ..lineTo(target.position.x * zoom, target.position.y * zoom)
       ..close();
     canvas.drawPath(path, paint);
   }
 
-  void drawLabel(Canvas canvas, bool shouldDraw) {
+  void drawLabel(
+      Canvas canvas, bool shouldDraw, double zoom, Size size, Offset offset) {
     if (shouldDraw) {
       TextPainter(
           text: TextSpan(
@@ -45,7 +48,7 @@ class Node {
     }
   }
 
-  void drawID(Canvas canvas) {
+  void drawID(Canvas canvas, double zoom, Size size, Offset offset) {
     TextPainter(
         text: TextSpan(
             style: TextStyle(color: Colors.blue[800]),
@@ -76,34 +79,204 @@ class Node {
       };
 }
 
-class Sigma extends StatelessWidget {
+class Sigma extends StatefulWidget {
   final Graph graph;
   final void Function(int) onSelected;
   final int selectedIndex;
 
   const Sigma({Key key, this.graph, this.onSelected, this.selectedIndex})
       : super(key: key);
+  static const List<MaterialColor> kSwatches = <MaterialColor>[
+    Colors.red,
+    Colors.pink,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.grey,
+    Colors.blueGrey,
+  ];
+
+  @override
+  _SigmaState createState() => _SigmaState();
+}
+
+class _SigmaState extends State<Sigma> {
+  Offset _startingFocalPoint;
+
+  Offset _previousOffset;
+
+  Offset _offset = Offset.zero;
+
+  double _previousZoom;
+
+  double _zoom = 1.0;
+
+  int _swatchIndex = 0;
+
+  MaterialColor _swatch = Sigma.kSwatches.first;
+
+  MaterialColor get swatch => _swatch;
+
+  bool _forward = true;
+
+  bool _scaleEnabled = true;
+
+  bool _tapEnabled = true;
+
+  bool _doubleTapEnabled = true;
+
+  bool _longPressEnabled = true;
+
+  void _handleScaleStart(ScaleStartDetails details) {
+    setState(() {
+      _startingFocalPoint = details.focalPoint;
+      _previousOffset = _offset;
+      _previousZoom = _zoom;
+    });
+  }
+
+  void _handleScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      _zoom = _previousZoom * details.scale;
+
+      // Ensure that item under the focal point stays in the same place despite zooming
+      final Offset normalizedOffset =
+          (_startingFocalPoint - _previousOffset) / _previousZoom;
+      _offset = details.focalPoint - normalizedOffset * _zoom;
+    });
+  }
+
+  void _handleScaleReset() {
+    setState(() {
+      _zoom = 1.0;
+      _offset = Offset.zero;
+    });
+  }
+
+  void _handleTap(TapDownDetails details) {
+    RenderBox box = context.findRenderObject();
+    final offset = box.globalToLocal(details.globalPosition);
+    final index =
+        widget.graph.nodes.lastIndexWhere((node) => node.contains(offset));
+    print('touching id ${widget.graph.nodes[index].id}');
+    print('touching label ${widget.graph.nodes[index].label}');
+    if (index != -1) {
+      widget.onSelected(index);
+      return;
+    }
+    widget.onSelected(-1);
+  }
+
+  void _handleDirectionChange() {
+    setState(() {
+      _forward = !_forward;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    ;
-    return GestureDetector(
-      onTapDown: (details) {
-        RenderBox box = context.findRenderObject();
-        final offset = box.globalToLocal(details.globalPosition);
-        final index =
-            graph.nodes.lastIndexWhere((node) => node.contains(offset));
-        print('touching id ${graph.nodes[index].id}');
-        print('touching label ${graph.nodes[index].label}');
-        if (index != -1) {
-          onSelected(index);
-          return;
-        }
-        onSelected(-1);
-      },
-      child: CustomPaint(
-        size: MediaQuery.of(context).size,
-        painter: GraphPainter(graph: graph, selectedIndex: selectedIndex),
-      ),
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        GestureDetector(
+          onScaleStart: _scaleEnabled ? _handleScaleStart : null,
+          onScaleUpdate: _scaleEnabled ? _handleScaleUpdate : null,
+          onTapDown: _tapEnabled ? _handleTap : null,
+          onDoubleTap: _doubleTapEnabled ? _handleScaleReset : null,
+          onLongPress: _longPressEnabled ? _handleDirectionChange : null,
+          child: CustomPaint(
+            painter: GraphPainter(
+              graph: widget.graph,
+              selectedIndex: widget.selectedIndex,
+              zoom: _zoom,
+              offset: _offset,
+              swatch: swatch,
+              forward: _forward,
+              scaleEnabled: _scaleEnabled,
+              tapEnabled: _tapEnabled,
+              doubleTapEnabled: _doubleTapEnabled,
+              longPressEnabled: _longPressEnabled,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0.0,
+          left: 0.0,
+          child: Card(
+            child: Container(
+              padding: const EdgeInsets.all(4.0),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: _scaleEnabled,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _scaleEnabled = value;
+                          });
+                        },
+                      ),
+                      const Text('Scale'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: _tapEnabled,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _tapEnabled = value;
+                          });
+                        },
+                      ),
+                      const Text('Tap'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: _doubleTapEnabled,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _doubleTapEnabled = value;
+                          });
+                        },
+                      ),
+                      const Text('Double Tap'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: _longPressEnabled,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _longPressEnabled = value;
+                          });
+                        },
+                      ),
+                      const Text('Long Press'),
+                    ],
+                  ),
+                ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -134,23 +307,25 @@ class Graph {
 
   Graph({this.edges, this.nodes});
 
-  void draw(Canvas canvas, int selectedIndex) {
+  void draw(
+      Canvas canvas, int selectedIndex, double zoom, Size size, Offset offset) {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
       source = nodes.firstWhere((node) => node.id == edges[i].source);
       target = nodes.firstWhere((node) => node.id == edges[i].target);
-      source.drawEdge(canvas, target);
+      source.drawEdge(canvas, target, zoom, size, offset);
     }
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
       source.drawNode(
           canvas,
-          i == selectedIndex
-              ? Colors.blue
-              : Colors.redAccent); //TODO: Color settings
-      source.drawLabel(canvas, i == selectedIndex);
-      source.drawID(canvas);
+          i == selectedIndex ? Colors.blue : Colors.redAccent,
+          zoom,
+          size,
+          offset); //TODO: Color settings
+      source.drawLabel(canvas, i == selectedIndex, zoom, size, offset);
+      source.drawID(canvas, zoom, size, offset);
     }
   }
 
