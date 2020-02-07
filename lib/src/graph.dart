@@ -3,33 +3,35 @@ import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import 'painter.dart';
 
-class Node with ChangeNotifier {
+class Node {
   final String id;
   final String label;
   final Vector2 position;
   final double radius;
-  
+
   Node({this.id, this.label, this.position, this.radius});
 
   void drawNode(
-      Canvas canvas, Color color, double zoom, Size size, Offset offset) {
+      Canvas canvas, Color color, double zoom, Size size, Offset scaleOffset) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0;
-    final center = Offset(position.x, position.y) * zoom + offset;
+    final center = recenter(zoom, scaleOffset);
     canvas.drawCircle(center, radius, paint);
   }
 
+  Offset recenter(double zoom, Offset scaleOffset) =>
+      Offset(position.x, position.y) * zoom + scaleOffset;
+
   void drawEdge(
-      Canvas canvas, Node target, double zoom, Size size, Offset offset) {
+      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset) {
     final paint = Paint()
       ..color = Colors.redAccent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0; //TODO: Stroke settings
-    final center = Offset(position.x, position.y) * zoom + offset;
-    final centerTarget =
-        Offset(target.position.x, target.position.y) * zoom + offset;
+    final center = recenter(zoom, scaleOffset);
+    final centerTarget = target.recenter(zoom, scaleOffset);
     final path = Path()
       ..moveTo(center.dx, center.dy)
       ..lineTo(centerTarget.dx, centerTarget.dy)
@@ -37,8 +39,8 @@ class Node with ChangeNotifier {
     canvas.drawPath(path, paint);
   }
 
-  void drawLabel(
-      Canvas canvas, bool shouldDraw, double zoom, Size size, Offset offset) {
+  void drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
+      Offset scaleOffset) {
     if (shouldDraw) {
       TextPainter(
           text: TextSpan(
@@ -51,11 +53,11 @@ class Node with ChangeNotifier {
             canvas,
             Offset(position.x + radius + radius / 2, position.y - radius / 4) *
                     zoom +
-                offset);
+                scaleOffset); //TODO: extension method on Offset to recenter
     }
   }
 
-  void drawID(Canvas canvas, double zoom, Size size, Offset offset) {
+  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset) {
     TextPainter(
         text: TextSpan(
             style: TextStyle(color: Colors.blue[800]),
@@ -63,11 +65,14 @@ class Node with ChangeNotifier {
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
       ..layout()
-      ..paint(canvas, Offset(position.x - 5, position.y - 5) * zoom + offset);
+      ..paint(
+          canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
   }
 
-  bool contains(Offset offset) =>
-      Rect.fromCircle(center: Offset(position.x, position.y), radius: radius)
+  bool contains(Offset offset, double zoom, Offset scaleOffset) =>
+      Rect.fromCircle(
+              center: Offset(position.x, position.y) * zoom + scaleOffset,
+              radius: radius)
           .contains(offset);
 
   factory Node.fromJson(Map<String, dynamic> json) => Node(
@@ -145,7 +150,8 @@ class _SigmaState extends State<Sigma> {
   }
 
   void _handleTap(TapDownDetails details) {
-    final int index = widget.graph.getNodeIndex(context, details);
+    final int index =
+        widget.graph.getNodeIndex(context, details, _zoom, _offset);
     widget.onNodeSelect(widget.graph.nodes[index]);
 
     if (index != -1) {
@@ -289,14 +295,14 @@ class Graph {
 
   Graph({this.edges, this.nodes});
 
-  void draw(
-      Canvas canvas, int selectedIndex, double zoom, Size size, Offset offset) {
+  void draw(Canvas canvas, int selectedIndex, double zoom, Size size,
+      Offset scaleOffset) {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
       source = nodeSource(i);
       target = nodeTarget(i);
-      source.drawEdge(canvas, target, zoom, size, offset);
+      source.drawEdge(canvas, target, zoom, size, scaleOffset);
     }
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
@@ -305,9 +311,9 @@ class Graph {
           i == selectedIndex ? Colors.blue : Colors.redAccent,
           zoom,
           size,
-          offset); //TODO: Color settings
-      source.drawLabel(canvas, i == selectedIndex, zoom, size, offset);
-      source.drawID(canvas, zoom, size, offset);
+          scaleOffset); //TODO: Color settings
+      source.drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset);
+      source.drawID(canvas, zoom, size, scaleOffset);
     }
   }
 
@@ -327,9 +333,11 @@ class Graph {
   Node nodeTarget(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].target);
 
-  int getNodeIndex(BuildContext context, TapDownDetails details) {
+  int getNodeIndex(BuildContext context, TapDownDetails details, double zoom,
+      Offset scaleOffset) {
     RenderBox box = context.findRenderObject();
     final offset = box.globalToLocal(details.globalPosition);
-    return nodes.lastIndexWhere((node) => node.contains(offset));
+    return nodes
+        .lastIndexWhere((node) => node.contains(offset, zoom, scaleOffset));
   }
 }
