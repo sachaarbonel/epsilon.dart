@@ -84,7 +84,6 @@ class Sigma extends StatefulWidget {
   final void Function(Node node) onNodeSelect;
 
   const Sigma({Key key, this.graph, this.onNodeSelect}) : super(key: key);
- 
 
   @override
   _SigmaState createState() => _SigmaState();
@@ -92,7 +91,6 @@ class Sigma extends StatefulWidget {
 
 class _SigmaState extends State<Sigma> {
   int _selectedIndex;
-  int _index = -1;
   Offset _startingFocalPoint;
 
   Offset _previousOffset;
@@ -102,8 +100,6 @@ class _SigmaState extends State<Sigma> {
   double _previousZoom;
 
   double _zoom = 1.0;
-
-  int _swatchIndex = 0;
 
   bool _forward = true;
 
@@ -291,8 +287,8 @@ class Graph {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
-      source = nodes.firstWhere((node) => node.id == edges[i].source);
-      target = nodes.firstWhere((node) => node.id == edges[i].target);
+      source = nodeSource(i);
+      target = nodeTarget(i);
       source.drawEdge(canvas, target, zoom, size, offset);
     }
     for (i = 0; i < nodes.length; i += 1) {
@@ -317,6 +313,12 @@ class Graph {
         'nodes': List<dynamic>.from(nodes.map((x) => x.toJson())),
         'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
       };
+
+  Node nodeSource(int idx) =>
+      nodes.firstWhere((node) => node.id == edges[idx].source);
+
+  Node nodeTarget(int idx) =>
+      nodes.firstWhere((node) => node.id == edges[idx].target);
 
   int getNodeIndex(BuildContext context, TapDownDetails details) {
     RenderBox box = context.findRenderObject();

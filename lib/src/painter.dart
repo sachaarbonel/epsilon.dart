@@ -7,7 +7,6 @@ class GraphPainter extends CustomPainter {
     this.selectedIndex,
     this.zoom,
     this.offset,
-    this.swatch,
     this.forward,
     this.scaleEnabled,
     this.tapEnabled,
@@ -18,7 +17,6 @@ class GraphPainter extends CustomPainter {
   final int selectedIndex;
   final double zoom;
   final Offset offset;
-  final Color swatch;
 
   //booleans
   final bool forward;
@@ -36,7 +34,6 @@ class GraphPainter extends CustomPainter {
   bool shouldRepaint(GraphPainter oldPainter) {
     return oldPainter.zoom != zoom ||
         oldPainter.offset != offset ||
-        oldPainter.swatch != swatch ||
         oldPainter.forward != forward ||
         oldPainter.selectedIndex != selectedIndex ||
         oldPainter.scaleEnabled != scaleEnabled ||
