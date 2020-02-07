@@ -85,6 +85,7 @@ class Sigma extends StatelessWidget {
       : super(key: key);
   @override
   Widget build(BuildContext context) {
+    ;
     return GestureDetector(
       onTapDown: (details) {
         RenderBox box = context.findRenderObject();
@@ -100,7 +101,7 @@ class Sigma extends StatelessWidget {
         onSelected(-1);
       },
       child: CustomPaint(
-        size: Size(320, 240),
+        size: MediaQuery.of(context).size,
         painter: GraphPainter(graph: graph, selectedIndex: selectedIndex),
       ),
     );

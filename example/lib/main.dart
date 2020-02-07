@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
                   id: 'n2',
                   label: 'And a last one',
                   position: Vector2(100, 300),
-                  radius: 10)
+                  radius: 20)
             ], edges: [
               Edge(id: 'e0', source: 'n0', target: 'n1'),
               Edge(id: 'e1', source: 'n1', target: 'n2'),
