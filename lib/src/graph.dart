@@ -81,11 +81,8 @@ class Node {
 
 class Sigma extends StatefulWidget {
   final Graph graph;
-  final void Function(int) onSelected;
-  final int selectedIndex;
 
-  const Sigma({Key key, this.graph, this.onSelected, this.selectedIndex})
-      : super(key: key);
+  const Sigma({Key key, this.graph}) : super(key: key);
   static const List<MaterialColor> kSwatches = <MaterialColor>[
     Colors.red,
     Colors.pink,
@@ -112,6 +109,9 @@ class Sigma extends StatefulWidget {
 }
 
 class _SigmaState extends State<Sigma> {
+  //void Function(int) onSelected;
+  int _selectedIndex;
+  int _index = -1;
   Offset _startingFocalPoint;
 
   Offset _previousOffset;
@@ -165,22 +165,25 @@ class _SigmaState extends State<Sigma> {
   }
 
   void _handleTap(TapDownDetails details) {
-    RenderBox box = context.findRenderObject();
-    final offset = box.globalToLocal(details.globalPosition);
-    final index =
-        widget.graph.nodes.lastIndexWhere((node) => node.contains(offset));
+    final int index = widget.graph.getNodeIndex(context, details);
     print('touching id ${widget.graph.nodes[index].id}');
     print('touching label ${widget.graph.nodes[index].label}');
     if (index != -1) {
-      widget.onSelected(index);
+      _onSelected(index);
       return;
     }
-    widget.onSelected(-1);
+    _onSelected(-1);
   }
 
   void _handleDirectionChange() {
     setState(() {
       _forward = !_forward;
+    });
+  }
+
+    void _onSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
     });
   }
 
@@ -198,7 +201,7 @@ class _SigmaState extends State<Sigma> {
           child: CustomPaint(
             painter: GraphPainter(
               graph: widget.graph,
-              selectedIndex: widget.selectedIndex,
+              selectedIndex: _selectedIndex,
               zoom: _zoom,
               offset: _offset,
               swatch: swatch,
@@ -338,4 +341,10 @@ class Graph {
         'nodes': List<dynamic>.from(nodes.map((x) => x.toJson())),
         'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
       };
+
+  int getNodeIndex(BuildContext context, TapDownDetails details) {
+    RenderBox box = context.findRenderObject();
+    final offset = box.globalToLocal(details.globalPosition);
+    return nodes.lastIndexWhere((node) => node.contains(offset));
+  }
 }

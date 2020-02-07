@@ -12,7 +12,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _index = -1;
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +43,7 @@ class _MyAppState extends State<MyApp> {
               Edge(id: 'e1', source: 'n1', target: 'n2'),
               Edge(id: 'e2', source: 'n2', target: 'n0')
             ]),
-            selectedIndex: _index,
-            onSelected: (index) {
-              print(index);
-              setState(() {
-                _index = index;
-              });
-            },
+          
           ),
         ),
       ),
