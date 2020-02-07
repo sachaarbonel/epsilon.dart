@@ -44,7 +44,7 @@ class Node {
     }
   }
 
-  void drawID(Canvas canvas, bool shouldDraw) {
+  void drawID(Canvas canvas) {
     TextPainter(
         text: TextSpan(style: TextStyle(color: Colors.blue[800]), text: id),
         textAlign: TextAlign.left,
@@ -56,6 +56,21 @@ class Node {
   bool contains(Offset offset) =>
       Rect.fromCircle(center: Offset(position.x, position.y), radius: radius)
           .contains(offset);
+
+  factory Node.fromJson(Map<String, dynamic> json) => Node(
+        id: json['id'],
+        label: json['label'],
+        position: Vector2(json['x'], json['y']),
+        radius: json['size'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'x': position.x,
+        'y': position.y,
+        'size': radius,
+      };
 }
 
 class Sigma extends StatelessWidget {
@@ -95,6 +110,18 @@ class Edge {
   final String target;
 
   Edge({this.id, this.source, this.target});
+
+  factory Edge.fromJson(Map<String, dynamic> json) => Edge(
+        id: json['id'],
+        source: json['source'],
+        target: json['target'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'source': source,
+        'target': target,
+      };
 }
 
 class Graph {
@@ -119,4 +146,14 @@ class Graph {
       source.drawID(canvas);
     }
   }
+
+  factory Graph.fromJson(Map<String, dynamic> json) => Graph(
+        nodes: List<Node>.from(json['nodes'].map((x) => Node.fromJson(x))),
+        edges: List<Edge>.from(json['edges'].map((x) => Edge.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'nodes': List<dynamic>.from(nodes.map((x) => x.toJson())),
+        'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
+      };
 }
