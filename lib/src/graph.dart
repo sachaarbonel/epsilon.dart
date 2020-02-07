@@ -81,35 +81,16 @@ class Node {
 
 class Sigma extends StatefulWidget {
   final Graph graph;
+  final void Function(Node node) onNodeSelect;
 
-  const Sigma({Key key, this.graph}) : super(key: key);
-  static const List<MaterialColor> kSwatches = <MaterialColor>[
-    Colors.red,
-    Colors.pink,
-    Colors.purple,
-    Colors.deepPurple,
-    Colors.indigo,
-    Colors.blue,
-    Colors.lightBlue,
-    Colors.cyan,
-    Colors.green,
-    Colors.lightGreen,
-    Colors.lime,
-    Colors.yellow,
-    Colors.amber,
-    Colors.orange,
-    Colors.deepOrange,
-    Colors.brown,
-    Colors.grey,
-    Colors.blueGrey,
-  ];
+  const Sigma({Key key, this.graph, this.onNodeSelect}) : super(key: key);
+ 
 
   @override
   _SigmaState createState() => _SigmaState();
 }
 
 class _SigmaState extends State<Sigma> {
-  //void Function(int) onSelected;
   int _selectedIndex;
   int _index = -1;
   Offset _startingFocalPoint;
@@ -123,10 +104,6 @@ class _SigmaState extends State<Sigma> {
   double _zoom = 1.0;
 
   int _swatchIndex = 0;
-
-  MaterialColor _swatch = Sigma.kSwatches.first;
-
-  MaterialColor get swatch => _swatch;
 
   bool _forward = true;
 
@@ -166,8 +143,8 @@ class _SigmaState extends State<Sigma> {
 
   void _handleTap(TapDownDetails details) {
     final int index = widget.graph.getNodeIndex(context, details);
-    print('touching id ${widget.graph.nodes[index].id}');
-    print('touching label ${widget.graph.nodes[index].label}');
+    widget.onNodeSelect(widget.graph.nodes[index]);
+
     if (index != -1) {
       _onSelected(index);
       return;
@@ -181,7 +158,7 @@ class _SigmaState extends State<Sigma> {
     });
   }
 
-    void _onSelected(int index) {
+  void _onSelected(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -204,7 +181,6 @@ class _SigmaState extends State<Sigma> {
               selectedIndex: _selectedIndex,
               zoom: _zoom,
               offset: _offset,
-              swatch: swatch,
               forward: _forward,
               scaleEnabled: _scaleEnabled,
               tapEnabled: _tapEnabled,

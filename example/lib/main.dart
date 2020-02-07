@@ -12,8 +12,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
- 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,6 +20,10 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         body: Center(
           child: Sigma(
+            onNodeSelect: (Node node) {
+              print('touching id ${node.id}');
+              print('touching label ${node.label}');
+            },
             graph: Graph(nodes: [
               Node(
                   id: 'n0',
@@ -43,7 +45,6 @@ class _MyAppState extends State<MyApp> {
               Edge(id: 'e1', source: 'n1', target: 'n2'),
               Edge(id: 'e2', source: 'n2', target: 'n0')
             ]),
-          
           ),
         ),
       ),
