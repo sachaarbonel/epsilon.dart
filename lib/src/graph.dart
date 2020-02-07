@@ -23,7 +23,7 @@ class Node {
     final paint = Paint()
       ..color = Colors.redAccent
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 1.0; //TODO: Stroke settings
     final path = Path()
       ..moveTo(position.x, position.y)
       ..lineTo(target.position.x, target.position.y)
@@ -34,8 +34,9 @@ class Node {
   void drawLabel(Canvas canvas, bool shouldDraw) {
     if (shouldDraw) {
       TextPainter(
-          text:
-              TextSpan(style: TextStyle(color: Colors.blue[800]), text: label),
+          text: TextSpan(
+              style: TextStyle(color: Colors.blue[800]),
+              text: label), //TODO: Text settings
           textAlign: TextAlign.left,
           textDirection: TextDirection.ltr)
         ..layout()
@@ -46,7 +47,9 @@ class Node {
 
   void drawID(Canvas canvas) {
     TextPainter(
-        text: TextSpan(style: TextStyle(color: Colors.blue[800]), text: id),
+        text: TextSpan(
+            style: TextStyle(color: Colors.blue[800]),
+            text: id), //TODO: Text settings
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
       ..layout()
@@ -141,7 +144,10 @@ class Graph {
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
       source.drawNode(
-          canvas, i == selectedIndex ? Colors.blue : Colors.redAccent);
+          canvas,
+          i == selectedIndex
+              ? Colors.blue
+              : Colors.redAccent); //TODO: Color settings
       source.drawLabel(canvas, i == selectedIndex);
       source.drawID(canvas);
     }
