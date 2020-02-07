@@ -3,12 +3,13 @@ import 'package:sigma/src/graph.dart';
 
 class GraphPainter extends CustomPainter {
   final Graph graph;
+  final int selectedIndex;
 
-  GraphPainter({this.graph});
+  GraphPainter({this.graph, this.selectedIndex});
 
   @override
   void paint(Canvas canvas, Size size) {
-    graph.draw(canvas);
+    graph.draw(canvas, selectedIndex);
   }
 
   @override
