@@ -3,11 +3,12 @@ import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import 'painter.dart';
 
-class Node {
+class Node with ChangeNotifier {
   final String id;
   final String label;
   final Vector2 position;
   final double radius;
+  
   Node({this.id, this.label, this.position, this.radius});
 
   void drawNode(
@@ -16,8 +17,8 @@ class Node {
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0;
-
-    canvas.drawCircle(Offset(position.x, position.y), radius, paint);
+    final center = Offset(position.x, position.y) * zoom + offset;
+    canvas.drawCircle(center, radius, paint);
   }
 
   void drawEdge(
@@ -26,9 +27,12 @@ class Node {
       ..color = Colors.redAccent
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0; //TODO: Stroke settings
+    final center = Offset(position.x, position.y) * zoom + offset;
+    final centerTarget =
+        Offset(target.position.x, target.position.y) * zoom + offset;
     final path = Path()
-      ..moveTo(position.x * zoom, position.y * zoom)
-      ..lineTo(target.position.x * zoom, target.position.y * zoom)
+      ..moveTo(center.dx, center.dy)
+      ..lineTo(centerTarget.dx, centerTarget.dy)
       ..close();
     canvas.drawPath(path, paint);
   }
@@ -43,8 +47,11 @@ class Node {
           textAlign: TextAlign.left,
           textDirection: TextDirection.ltr)
         ..layout()
-        ..paint(canvas,
-            Offset(position.x + radius + radius / 2, position.y - radius / 4));
+        ..paint(
+            canvas,
+            Offset(position.x + radius + radius / 2, position.y - radius / 4) *
+                    zoom +
+                offset);
     }
   }
 
@@ -56,7 +63,7 @@ class Node {
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
       ..layout()
-      ..paint(canvas, Offset(position.x - 5, position.y - 5));
+      ..paint(canvas, Offset(position.x - 5, position.y - 5) * zoom + offset);
   }
 
   bool contains(Offset offset) =>
