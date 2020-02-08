@@ -2,103 +2,6 @@ import 'package:epsilon/src/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
-class Node {
-  final String id;
-  final String label;
-  final Vector2 position;
-  final double radius;
-
-  Node(
-      {@required this.id,
-      this.label,
-      @required this.position,
-      @required this.radius})
-      : assert(id != null, "Your Graph must be defined with a valid Node ID"),
-        assert(position != null,
-            "Your Graph must be defined with a valid Node position"),
-        assert(radius != null,
-            "Your Graph must be defined with a valid Node radius");
-
-  void _drawNode(
-      Canvas canvas, Color color, double zoom, Size size, Offset scaleOffset) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 8.0;
-    final center = _recenter(zoom, scaleOffset);
-    canvas.drawCircle(center, radius, paint);
-  }
-
-  Offset _recenter(double zoom, Offset scaleOffset) =>
-      Offset(position.x, position.y) * zoom + scaleOffset;
-
-  void _drawEdge(
-      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset,
-      {Settings settings}) {
-    final paint = Paint()
-      ..color = settings.edgeColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = settings.edgeWidth; //TODO: Stroke settings
-    final center = _recenter(zoom, scaleOffset);
-    final centerTarget = target._recenter(zoom, scaleOffset);
-    final path = Path()
-      ..moveTo(center.dx, center.dy)
-      ..lineTo(centerTarget.dx, centerTarget.dy)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
-      Offset scaleOffset,
-      {Settings settings}) {
-    if (shouldDraw) {
-      TextPainter(
-          text: TextSpan(
-              style: settings.labelStyle, text: label), //TODO: Text settings
-          textAlign: TextAlign.left,
-          textDirection: TextDirection.ltr)
-        ..layout()
-        ..paint(
-            canvas,
-            Offset(position.x + radius + radius / 2, position.y - radius / 4) *
-                    zoom +
-                scaleOffset); //TODO: extension method on Offset to recenter
-    }
-  }
-
-  void _drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
-      {Settings settings}) {
-    TextPainter(
-        text: TextSpan(style: settings.iDStyle, text: id), //TODO: Text settings
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr)
-      ..layout()
-      ..paint(
-          canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
-  }
-
-  bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
-      Rect.fromCircle(
-              center: Offset(position.x, position.y) * zoom + scaleOffset,
-              radius: radius)
-          .contains(offset);
-
-  factory Node.fromJson(Map<String, dynamic> json) => Node(
-        id: json['id'],
-        label: json['label'],
-        position: Vector2(json['x'], json['y']),
-        radius: json['size'],
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'label': label,
-        'x': position.x,
-        'y': position.y,
-        'size': radius,
-      };
-}
-
 class Graph {
   final List<Edge> edges;
   final List<Node> nodes;
@@ -123,16 +26,16 @@ class Graph {
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
       source._drawNode(
-          canvas,
-          i == selectedIndex ? Colors.blue : Colors.redAccent,
-          zoom,
-          size,
-          scaleOffset); //TODO: Color settings
-      source._drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset,
+          canvas, shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
+          settings: settings);
+      source._drawLabel(
+          canvas, shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
           settings: settings);
       source._drawID(canvas, zoom, size, scaleOffset, settings: settings);
     }
   }
+
+  bool shouldDraw(int index, int selectedIndex) => index == selectedIndex;
 
   Node _nodeSource(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].source);
@@ -163,6 +66,7 @@ class Edge {
   final String id;
   final String source;
   final String target;
+  //weight
 
   Edge({@required this.id, @required this.source, @required this.target})
       : assert(id != null, "Edge ID must not be null"),
@@ -179,5 +83,110 @@ class Edge {
         'id': id,
         'source': source,
         'target': target,
+      };
+}
+
+class Node {
+  final String id;
+  final String label;
+  final Vector2 position;
+  final double radius;
+  final String type;
+
+  Node(
+      {@required this.id,
+      this.label,
+      @required this.position,
+      @required this.radius,
+      this.type})
+      : assert(id != null, "Your Graph must be defined with a valid Node ID"),
+        assert(position != null,
+            "Your Graph must be defined with a valid Node position"),
+        assert(radius != null,
+            "Your Graph must be defined with a valid Node radius");
+
+  void _drawNode(Canvas canvas, bool shouldRedraw, double zoom, Size size,
+      Offset scaleOffset,
+      {Settings settings}) {
+    final paint = Paint()
+      ..color = shouldRedraw
+          ? settings.nodeActiveColor
+          : settings.nodeSelectors
+              .firstWhere((nodeSelector) => nodeSelector.type == type)
+              .attributes['color']
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 8.0;
+    final center = _recenter(zoom, scaleOffset);
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  Offset _recenter(double zoom, Offset scaleOffset) =>
+      Offset(position.x, position.y) * zoom + scaleOffset;
+
+  void _drawEdge(
+      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset,
+      {Settings settings}) {
+    final paint = Paint()
+      ..color = settings.edgeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = settings.edgeWidth;
+    final center = _recenter(zoom, scaleOffset);
+    final centerTarget = target._recenter(zoom, scaleOffset);
+    final path = Path()
+      ..moveTo(center.dx, center.dy)
+      ..lineTo(centerTarget.dx, centerTarget.dy)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
+      Offset scaleOffset,
+      {Settings settings}) {
+    if (shouldDraw) {
+      TextPainter(
+          text: TextSpan(style: settings.labelStyle, text: label),
+          textAlign: TextAlign.left,
+          textDirection: TextDirection.ltr)
+        ..layout()
+        ..paint(
+            canvas,
+            Offset(position.x + radius + radius / 2, position.y - radius / 4) *
+                    zoom +
+                scaleOffset); //TODO: extension method on Offset to recenter
+    }
+  }
+
+  void _drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
+      {Settings settings}) {
+    TextPainter(
+        text: TextSpan(style: settings.iDStyle, text: id),
+        textAlign: TextAlign.left,
+        textDirection: TextDirection.ltr)
+      ..layout()
+      ..paint(
+          canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
+  }
+
+  bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
+      Rect.fromCircle(
+              center: Offset(position.x, position.y) * zoom + scaleOffset,
+              radius: radius)
+          .contains(offset);
+
+  factory Node.fromJson(Map<String, dynamic> json) => Node(
+        id: json['id'],
+        label: json['label'],
+        position: Vector2(json['x'], json['y']),
+        radius: json['size'],
+        type: json['type'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'x': position.x,
+        'y': position.y,
+        'size': radius,
+        'type': type
       };
 }
