@@ -12,7 +12,9 @@ class GraphPainter extends CustomPainter {
     this.tapEnabled,
     this.doubleTapEnabled,
     this.longPressEnabled,
+    this.settings,
   });
+  final Settings settings;
   final Graph graph;
   final int selectedIndex;
   final double zoom;
@@ -27,7 +29,7 @@ class GraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    graph.draw(canvas, selectedIndex, zoom, size, offset);
+    graph.draw(canvas, selectedIndex, zoom, size, offset, settings: settings);
   }
 
   @override

@@ -3,6 +3,18 @@ import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import 'painter.dart';
 
+class Settings {
+  final TextStyle labelStyle;
+
+  final Color edgeColor;
+
+  final TextStyle iDStyle;
+
+  final double edgeWidth;
+
+  Settings({this.edgeColor, this.labelStyle, this.iDStyle,this.edgeWidth});
+}
+
 class Node {
   final String id;
   final String label;
@@ -15,7 +27,7 @@ class Node {
       Canvas canvas, Color color, double zoom, Size size, Offset scaleOffset) {
     final paint = Paint()
       ..color = color
-      ..style = PaintingStyle.stroke
+      ..style = PaintingStyle.fill
       ..strokeWidth = 8.0;
     final center = recenter(zoom, scaleOffset);
     canvas.drawCircle(center, radius, paint);
@@ -25,11 +37,11 @@ class Node {
       Offset(position.x, position.y) * zoom + scaleOffset;
 
   void drawEdge(
-      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset) {
+      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset, {Settings settings}) {
     final paint = Paint()
-      ..color = Colors.redAccent
+      ..color = settings.edgeColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0; //TODO: Stroke settings
+      ..strokeWidth = settings.edgeWidth; //TODO: Stroke settings
     final center = recenter(zoom, scaleOffset);
     final centerTarget = target.recenter(zoom, scaleOffset);
     final path = Path()
@@ -40,12 +52,12 @@ class Node {
   }
 
   void drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
-      Offset scaleOffset) {
+      Offset scaleOffset,
+      {Settings settings}) {
     if (shouldDraw) {
       TextPainter(
           text: TextSpan(
-              style: TextStyle(color: Colors.blue[800]),
-              text: label), //TODO: Text settings
+              style: settings.labelStyle, text: label), //TODO: Text settings
           textAlign: TextAlign.left,
           textDirection: TextDirection.ltr)
         ..layout()
@@ -57,10 +69,10 @@ class Node {
     }
   }
 
-  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset) {
+  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset, {Settings settings}) {
     TextPainter(
         text: TextSpan(
-            style: TextStyle(color: Colors.blue[800]),
+            style:settings.iDStyle,
             text: id), //TODO: Text settings
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
@@ -94,8 +106,10 @@ class Node {
 class Sigma extends StatefulWidget {
   final Graph graph;
   final void Function(Node node) onNodeSelect;
+  final Settings settings;
 
-  const Sigma({Key key, this.graph, this.onNodeSelect}) : super(key: key);
+  const Sigma({Key key, this.graph, this.onNodeSelect, this.settings})
+      : super(key: key);
 
   @override
   _SigmaState createState() => _SigmaState();
@@ -186,6 +200,7 @@ class _SigmaState extends State<Sigma> {
           onLongPress: _longPressEnabled ? _handleDirectionChange : null,
           child: CustomPaint(
             painter: GraphPainter(
+              settings: widget.settings,
               graph: widget.graph,
               selectedIndex: _selectedIndex,
               zoom: _zoom,
@@ -296,13 +311,14 @@ class Graph {
   Graph({this.edges, this.nodes});
 
   void draw(Canvas canvas, int selectedIndex, double zoom, Size size,
-      Offset scaleOffset) {
+      Offset scaleOffset,
+      {Settings settings}) {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
       source = nodeSource(i);
       target = nodeTarget(i);
-      source.drawEdge(canvas, target, zoom, size, scaleOffset);
+      source.drawEdge(canvas, target, zoom, size, scaleOffset, settings: settings);
     }
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
@@ -312,8 +328,9 @@ class Graph {
           zoom,
           size,
           scaleOffset); //TODO: Color settings
-      source.drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset);
-      source.drawID(canvas, zoom, size, scaleOffset);
+      source.drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset,
+          settings: settings);
+      source.drawID(canvas, zoom, size, scaleOffset, settings: settings);
     }
   }
 

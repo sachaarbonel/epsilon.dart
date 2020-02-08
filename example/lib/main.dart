@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sigma/sigma.dart';
-import 'package:vector_math/vector_math_64.dart';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 final Color darkBlue = Color.fromARGB(255, 18, 32, 47);
 
@@ -20,6 +20,11 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         body: Center(
           child: Sigma(
+            settings: Settings(
+                edgeColor: Colors.redAccent,
+                labelStyle: TextStyle(color: Colors.green),
+                edgeWidth: 1.0,
+                iDStyle: TextStyle(color: Colors.blue[800])),
             onNodeSelect: (Node node) {
               print('touching id ${node.id}');
               print('touching label ${node.label}');
