@@ -12,7 +12,11 @@ class Settings {
 
   final double edgeWidth;
 
-  Settings({this.edgeColor, this.labelStyle, this.iDStyle, this.edgeWidth});
+  Settings(
+      {this.edgeColor = Colors.redAccent,
+      this.labelStyle = const TextStyle(color: Colors.green),
+      this.iDStyle = const TextStyle(color: Colors.blue),
+      this.edgeWidth = 1.0});
 }
 
 class Node {
@@ -21,7 +25,16 @@ class Node {
   final Vector2 position;
   final double radius;
 
-  Node({this.id, this.label, this.position, this.radius});
+  Node(
+      {@required this.id,
+      this.label,
+      @required this.position,
+      @required this.radius})
+      : assert(id != null, "Your Graph must be defined with a valid Node ID"),
+       assert(position != null,
+            "Your Graph must be defined with a valid Node position"),
+        assert(radius != null,
+            "Your Graph must be defined with a valid Node radius");
 
   void drawNode(
       Canvas canvas, Color color, double zoom, Size size, Offset scaleOffset) {
@@ -109,7 +122,9 @@ class Epsilon extends StatefulWidget {
   final Settings settings;
 
   const Epsilon({Key key, this.graph, this.onNodeSelect, this.settings})
-      : super(key: key);
+      : assert(graph != null, "You must give sigma widget a graph to render"),
+        assert(settings != null, "You must pass settings arguments"),
+        super(key: key);
 
   @override
   _SigmaState createState() => _SigmaState();
@@ -223,7 +238,10 @@ class Edge {
   final String source;
   final String target;
 
-  Edge({this.id, this.source, this.target});
+  Edge({@required this.id, @required this.source, @required this.target})
+      : assert(id != null, "Edge ID must not be null"),
+        assert(source != null, "Edge source must not be null"),
+        assert(target != null, "Edge target must not be null");
 
   factory Edge.fromJson(Map<String, dynamic> json) => Edge(
         id: json['id'],
@@ -242,7 +260,11 @@ class Graph {
   final List<Edge> edges;
   final List<Node> nodes;
 
-  Graph({this.edges, this.nodes});
+  Graph({@required this.edges, @required this.nodes})
+      : assert(
+            nodes != null, "Your graph must be defined with a list of nodes"),
+        assert(
+            edges != null, "Your graph must be defined with a list of edges");
 
   void draw(Canvas canvas, int selectedIndex, double zoom, Size size,
       Offset scaleOffset,
