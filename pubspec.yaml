@@ -5,7 +5,7 @@ description: A starting point for Dart libraries or applications.
 # author: Sacha <sacha.arbonel@hotmail.fr>
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
  vector_math: ^2.0.8
