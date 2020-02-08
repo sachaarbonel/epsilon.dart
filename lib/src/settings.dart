@@ -26,8 +26,8 @@ abstract class NodeAttribute {}
 
 class NodeSelector extends NodeAttribute {
   final String type;
-  LinkedHashMap<String, Color> _attributes = LinkedHashMap();
-  LinkedHashMap<String, Color> get attributes => _attributes;
+  LinkedHashMap<String, dynamic> _attributes = LinkedHashMap();
+  LinkedHashMap<String, dynamic> get attributes => _attributes;
   set attributes(LinkedHashMap<String, dynamic> attributes) => _attributes;
 
   NodeSelector({this.type});

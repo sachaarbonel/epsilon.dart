@@ -26,16 +26,16 @@ class Graph {
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
       source._drawNode(
-          canvas, shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
+          canvas, _shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
           settings: settings);
       source._drawLabel(
-          canvas, shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
+          canvas, _shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
           settings: settings);
       source._drawID(canvas, zoom, size, scaleOffset, settings: settings);
     }
   }
 
-  bool shouldDraw(int index, int selectedIndex) => index == selectedIndex;
+  bool _shouldDraw(int index, int selectedIndex) => index == selectedIndex;
 
   Node _nodeSource(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].source);
@@ -66,7 +66,7 @@ class Edge {
   final String id;
   final String source;
   final String target;
-  //weight
+  //final int weight
 
   Edge({@required this.id, @required this.source, @required this.target})
       : assert(id != null, "Edge ID must not be null"),
@@ -105,15 +105,18 @@ class Node {
         assert(radius != null,
             "Your Graph must be defined with a valid Node radius");
 
+  T _getAttribute<T>(String type, Settings settings, String attribute) =>
+      settings.nodeSelectors
+          .firstWhere((nodeSelector) => nodeSelector.type == type)
+          .attributes[attribute];
+
   void _drawNode(Canvas canvas, bool shouldRedraw, double zoom, Size size,
       Offset scaleOffset,
       {Settings settings}) {
     final paint = Paint()
       ..color = shouldRedraw
           ? settings.nodeActiveColor
-          : settings.nodeSelectors
-              .firstWhere((nodeSelector) => nodeSelector.type == type)
-              .attributes['color']
+          : _getAttribute<Color>(type, settings, 'color')
       ..style = PaintingStyle.fill
       ..strokeWidth = 8.0;
     final center = _recenter(zoom, scaleOffset);
