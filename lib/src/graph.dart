@@ -172,7 +172,7 @@ class Node {
 
   bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
       Rect.fromCircle(
-              center: Offset(position.x, position.y) * zoom + scaleOffset,
+              center: _recenter(zoom, scaleOffset),
               radius: radius)
           .contains(offset);
 
