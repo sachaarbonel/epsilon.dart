@@ -1,21 +1,6 @@
+import 'package:epsilon/src/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
-
-class Settings {
-  final TextStyle labelStyle;
-
-  final Color edgeColor;
-
-  final TextStyle iDStyle;
-
-  final double edgeWidth;
-
-  Settings(
-      {this.edgeColor = Colors.redAccent,
-      this.labelStyle = const TextStyle(color: Colors.green),
-      this.iDStyle = const TextStyle(color: Colors.blue),
-      this.edgeWidth = 1.0});
-}
 
 class Node {
   final String id;
@@ -114,29 +99,6 @@ class Node {
       };
 }
 
-class Edge {
-  final String id;
-  final String source;
-  final String target;
-
-  Edge({@required this.id, @required this.source, @required this.target})
-      : assert(id != null, "Edge ID must not be null"),
-        assert(source != null, "Edge source must not be null"),
-        assert(target != null, "Edge target must not be null");
-
-  factory Edge.fromJson(Map<String, dynamic> json) => Edge(
-        id: json['id'],
-        source: json['source'],
-        target: json['target'],
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'source': source,
-        'target': target,
-      };
-}
-
 class Graph {
   final List<Edge> edges;
   final List<Node> nodes;
@@ -172,16 +134,6 @@ class Graph {
     }
   }
 
-  factory Graph.fromJson(Map<String, dynamic> json) => Graph(
-        nodes: List<Node>.from(json['nodes'].map((x) => Node.fromJson(x))),
-        edges: List<Edge>.from(json['edges'].map((x) => Edge.fromJson(x))),
-      );
-
-  Map<String, dynamic> toJson() => {
-        'nodes': List<dynamic>.from(nodes.map((x) => x.toJson())),
-        'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
-      };
-
   Node _nodeSource(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].source);
 
@@ -195,4 +147,37 @@ class Graph {
     return nodes
         .lastIndexWhere((node) => node._contains(offset, zoom, scaleOffset));
   }
+
+  factory Graph.fromJson(Map<String, dynamic> json) => Graph(
+        nodes: List<Node>.from(json['nodes'].map((x) => Node.fromJson(x))),
+        edges: List<Edge>.from(json['edges'].map((x) => Edge.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'nodes': List<dynamic>.from(nodes.map((x) => x.toJson())),
+        'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
+      };
+}
+
+class Edge {
+  final String id;
+  final String source;
+  final String target;
+
+  Edge({@required this.id, @required this.source, @required this.target})
+      : assert(id != null, "Edge ID must not be null"),
+        assert(source != null, "Edge source must not be null"),
+        assert(target != null, "Edge target must not be null");
+
+  factory Edge.fromJson(Map<String, dynamic> json) => Edge(
+        id: json['id'],
+        source: json['source'],
+        target: json['target'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'source': source,
+        'target': target,
+      };
 }

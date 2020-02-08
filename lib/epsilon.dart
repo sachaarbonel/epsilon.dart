@@ -4,4 +4,5 @@
 library epsilon;
 
 export 'src/graph.dart';
+export 'src/settings.dart';
 export 'src/painter.dart';
