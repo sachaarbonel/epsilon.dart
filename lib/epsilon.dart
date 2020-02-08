@@ -1,7 +1,7 @@
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
-library sigma;
+library epsilon;
 
 export 'src/graph.dart';
 export 'src/painter.dart';

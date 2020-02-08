@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sigma/sigma.dart';
+import 'package:epsilon/epsilon.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 final Color darkBlue = Color.fromARGB(255, 18, 32, 47);
@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
-          child: Sigma(
+          child: Epsilon(
             settings: Settings(
                 edgeColor: Colors.redAccent,
                 labelStyle: TextStyle(color: Colors.green),

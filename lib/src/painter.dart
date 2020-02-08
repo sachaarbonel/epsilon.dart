@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:sigma/src/graph.dart';
+import 'package:epsilon/src/graph.dart';
 
 class GraphPainter extends CustomPainter {
   const GraphPainter({

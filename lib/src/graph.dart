@@ -12,7 +12,7 @@ class Settings {
 
   final double edgeWidth;
 
-  Settings({this.edgeColor, this.labelStyle, this.iDStyle,this.edgeWidth});
+  Settings({this.edgeColor, this.labelStyle, this.iDStyle, this.edgeWidth});
 }
 
 class Node {
@@ -37,7 +37,8 @@ class Node {
       Offset(position.x, position.y) * zoom + scaleOffset;
 
   void drawEdge(
-      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset, {Settings settings}) {
+      Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset,
+      {Settings settings}) {
     final paint = Paint()
       ..color = settings.edgeColor
       ..style = PaintingStyle.stroke
@@ -69,11 +70,10 @@ class Node {
     }
   }
 
-  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset, {Settings settings}) {
+  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
+      {Settings settings}) {
     TextPainter(
-        text: TextSpan(
-            style:settings.iDStyle,
-            text: id), //TODO: Text settings
+        text: TextSpan(style: settings.iDStyle, text: id), //TODO: Text settings
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
       ..layout()
@@ -103,19 +103,19 @@ class Node {
       };
 }
 
-class Sigma extends StatefulWidget {
+class Epsilon extends StatefulWidget {
   final Graph graph;
   final void Function(Node node) onNodeSelect;
   final Settings settings;
 
-  const Sigma({Key key, this.graph, this.onNodeSelect, this.settings})
+  const Epsilon({Key key, this.graph, this.onNodeSelect, this.settings})
       : super(key: key);
 
   @override
   _SigmaState createState() => _SigmaState();
 }
 
-class _SigmaState extends State<Sigma> {
+class _SigmaState extends State<Epsilon> {
   int _selectedIndex;
   Offset _startingFocalPoint;
 
@@ -318,7 +318,8 @@ class Graph {
     for (i = 0; i < edges.length; i += 1) {
       source = nodeSource(i);
       target = nodeTarget(i);
-      source.drawEdge(canvas, target, zoom, size, scaleOffset, settings: settings);
+      source.drawEdge(canvas, target, zoom, size, scaleOffset,
+          settings: settings);
     }
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
