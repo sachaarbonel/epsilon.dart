@@ -1,8 +1,126 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:epsilon/src/graph.dart';
 
-class GraphPainter extends CustomPainter {
-  const GraphPainter({
+
+class Epsilon extends StatefulWidget {
+  final Graph graph;
+  final void Function(Node node) onNodeSelect;
+  final Settings settings;
+
+  const Epsilon({Key key, this.graph, this.onNodeSelect, this.settings})
+      : assert(graph != null, "You must give sigma widget a graph to render"),
+        assert(settings != null, "You must pass settings arguments"),
+        super(key: key);
+
+  @override
+  _SigmaState createState() => _SigmaState();
+}
+
+class _SigmaState extends State<Epsilon> {
+  int _selectedIndex;
+  Offset _startingFocalPoint;
+
+  Offset _previousOffset;
+
+  Offset _offset = Offset.zero;
+
+  double _previousZoom;
+
+  double _zoom = 1.0;
+
+  bool _forward = true;
+
+  bool _scaleEnabled = true;
+
+  bool _tapEnabled = true;
+
+  bool _doubleTapEnabled = true;
+
+  bool _longPressEnabled = true;
+
+  void _handleScaleStart(ScaleStartDetails details) {
+    setState(() {
+      _startingFocalPoint = details.focalPoint;
+      _previousOffset = _offset;
+      _previousZoom = _zoom;
+    });
+  }
+
+  void _handleScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      _zoom = _previousZoom * details.scale;
+
+      // Ensure that item under the focal point stays in the same place despite zooming
+      final Offset normalizedOffset =
+          (_startingFocalPoint - _previousOffset) / _previousZoom;
+      _offset = details.focalPoint - normalizedOffset * _zoom;
+    });
+  }
+
+  void _handleScaleReset() {
+    setState(() {
+      _zoom = 1.0;
+      _offset = Offset.zero;
+    });
+  }
+
+  void _handleTap(TapDownDetails details) {
+    final int index =
+        widget.graph.getNodeIndex(context, details, _zoom, _offset);
+    widget.onNodeSelect(widget.graph.nodes[index]);
+
+    if (index != -1) {
+      _onSelected(index);
+      return;
+    }
+    _onSelected(-1);
+  }
+
+  void _handleDirectionChange() {
+    setState(() {
+      _forward = !_forward;
+    });
+  }
+
+  void _onSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        GestureDetector(
+          onScaleStart: _scaleEnabled ? _handleScaleStart : null,
+          onScaleUpdate: _scaleEnabled ? _handleScaleUpdate : null,
+          onTapDown: _tapEnabled ? _handleTap : null,
+          onDoubleTap: _doubleTapEnabled ? _handleScaleReset : null,
+          onLongPress: _longPressEnabled ? _handleDirectionChange : null,
+          child: CustomPaint(
+            painter: _GraphPainter(
+              settings: widget.settings,
+              graph: widget.graph,
+              selectedIndex: _selectedIndex,
+              zoom: _zoom,
+              offset: _offset,
+              forward: _forward,
+              scaleEnabled: _scaleEnabled,
+              tapEnabled: _tapEnabled,
+              doubleTapEnabled: _doubleTapEnabled,
+              longPressEnabled: _longPressEnabled,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+class _GraphPainter extends CustomPainter {
+  const _GraphPainter({
     this.graph,
     this.selectedIndex,
     this.zoom,
@@ -33,7 +151,7 @@ class GraphPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(GraphPainter oldPainter) {
+  bool shouldRepaint(_GraphPainter oldPainter) {
     return oldPainter.zoom != zoom ||
         oldPainter.offset != offset ||
         oldPainter.forward != forward ||

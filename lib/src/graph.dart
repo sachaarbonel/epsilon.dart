@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
-import 'painter.dart';
-
 class Settings {
   final TextStyle labelStyle;
 
@@ -31,33 +29,33 @@ class Node {
       @required this.position,
       @required this.radius})
       : assert(id != null, "Your Graph must be defined with a valid Node ID"),
-       assert(position != null,
+        assert(position != null,
             "Your Graph must be defined with a valid Node position"),
         assert(radius != null,
             "Your Graph must be defined with a valid Node radius");
 
-  void drawNode(
+  void _drawNode(
       Canvas canvas, Color color, double zoom, Size size, Offset scaleOffset) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill
       ..strokeWidth = 8.0;
-    final center = recenter(zoom, scaleOffset);
+    final center = _recenter(zoom, scaleOffset);
     canvas.drawCircle(center, radius, paint);
   }
 
-  Offset recenter(double zoom, Offset scaleOffset) =>
+  Offset _recenter(double zoom, Offset scaleOffset) =>
       Offset(position.x, position.y) * zoom + scaleOffset;
 
-  void drawEdge(
+  void _drawEdge(
       Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset,
       {Settings settings}) {
     final paint = Paint()
       ..color = settings.edgeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = settings.edgeWidth; //TODO: Stroke settings
-    final center = recenter(zoom, scaleOffset);
-    final centerTarget = target.recenter(zoom, scaleOffset);
+    final center = _recenter(zoom, scaleOffset);
+    final centerTarget = target._recenter(zoom, scaleOffset);
     final path = Path()
       ..moveTo(center.dx, center.dy)
       ..lineTo(centerTarget.dx, centerTarget.dy)
@@ -65,7 +63,7 @@ class Node {
     canvas.drawPath(path, paint);
   }
 
-  void drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
+  void _drawLabel(Canvas canvas, bool shouldDraw, double zoom, Size size,
       Offset scaleOffset,
       {Settings settings}) {
     if (shouldDraw) {
@@ -83,7 +81,7 @@ class Node {
     }
   }
 
-  void drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
+  void _drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
       {Settings settings}) {
     TextPainter(
         text: TextSpan(style: settings.iDStyle, text: id), //TODO: Text settings
@@ -94,7 +92,7 @@ class Node {
           canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
   }
 
-  bool contains(Offset offset, double zoom, Offset scaleOffset) =>
+  bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
       Rect.fromCircle(
               center: Offset(position.x, position.y) * zoom + scaleOffset,
               radius: radius)
@@ -114,123 +112,6 @@ class Node {
         'y': position.y,
         'size': radius,
       };
-}
-
-class Epsilon extends StatefulWidget {
-  final Graph graph;
-  final void Function(Node node) onNodeSelect;
-  final Settings settings;
-
-  const Epsilon({Key key, this.graph, this.onNodeSelect, this.settings})
-      : assert(graph != null, "You must give sigma widget a graph to render"),
-        assert(settings != null, "You must pass settings arguments"),
-        super(key: key);
-
-  @override
-  _SigmaState createState() => _SigmaState();
-}
-
-class _SigmaState extends State<Epsilon> {
-  int _selectedIndex;
-  Offset _startingFocalPoint;
-
-  Offset _previousOffset;
-
-  Offset _offset = Offset.zero;
-
-  double _previousZoom;
-
-  double _zoom = 1.0;
-
-  bool _forward = true;
-
-  bool _scaleEnabled = true;
-
-  bool _tapEnabled = true;
-
-  bool _doubleTapEnabled = true;
-
-  bool _longPressEnabled = true;
-
-  void _handleScaleStart(ScaleStartDetails details) {
-    setState(() {
-      _startingFocalPoint = details.focalPoint;
-      _previousOffset = _offset;
-      _previousZoom = _zoom;
-    });
-  }
-
-  void _handleScaleUpdate(ScaleUpdateDetails details) {
-    setState(() {
-      _zoom = _previousZoom * details.scale;
-
-      // Ensure that item under the focal point stays in the same place despite zooming
-      final Offset normalizedOffset =
-          (_startingFocalPoint - _previousOffset) / _previousZoom;
-      _offset = details.focalPoint - normalizedOffset * _zoom;
-    });
-  }
-
-  void _handleScaleReset() {
-    setState(() {
-      _zoom = 1.0;
-      _offset = Offset.zero;
-    });
-  }
-
-  void _handleTap(TapDownDetails details) {
-    final int index =
-        widget.graph.getNodeIndex(context, details, _zoom, _offset);
-    widget.onNodeSelect(widget.graph.nodes[index]);
-
-    if (index != -1) {
-      _onSelected(index);
-      return;
-    }
-    _onSelected(-1);
-  }
-
-  void _handleDirectionChange() {
-    setState(() {
-      _forward = !_forward;
-    });
-  }
-
-  void _onSelected(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        GestureDetector(
-          onScaleStart: _scaleEnabled ? _handleScaleStart : null,
-          onScaleUpdate: _scaleEnabled ? _handleScaleUpdate : null,
-          onTapDown: _tapEnabled ? _handleTap : null,
-          onDoubleTap: _doubleTapEnabled ? _handleScaleReset : null,
-          onLongPress: _longPressEnabled ? _handleDirectionChange : null,
-          child: CustomPaint(
-            painter: GraphPainter(
-              settings: widget.settings,
-              graph: widget.graph,
-              selectedIndex: _selectedIndex,
-              zoom: _zoom,
-              offset: _offset,
-              forward: _forward,
-              scaleEnabled: _scaleEnabled,
-              tapEnabled: _tapEnabled,
-              doubleTapEnabled: _doubleTapEnabled,
-              longPressEnabled: _longPressEnabled,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class Edge {
@@ -272,22 +153,22 @@ class Graph {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
-      source = nodeSource(i);
-      target = nodeTarget(i);
-      source.drawEdge(canvas, target, zoom, size, scaleOffset,
+      source = _nodeSource(i);
+      target = _nodeTarget(i);
+      source._drawEdge(canvas, target, zoom, size, scaleOffset,
           settings: settings);
     }
     for (i = 0; i < nodes.length; i += 1) {
       source = nodes[i];
-      source.drawNode(
+      source._drawNode(
           canvas,
           i == selectedIndex ? Colors.blue : Colors.redAccent,
           zoom,
           size,
           scaleOffset); //TODO: Color settings
-      source.drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset,
+      source._drawLabel(canvas, i == selectedIndex, zoom, size, scaleOffset,
           settings: settings);
-      source.drawID(canvas, zoom, size, scaleOffset, settings: settings);
+      source._drawID(canvas, zoom, size, scaleOffset, settings: settings);
     }
   }
 
@@ -301,10 +182,10 @@ class Graph {
         'edges': List<dynamic>.from(edges.map((x) => x.toJson())),
       };
 
-  Node nodeSource(int idx) =>
+  Node _nodeSource(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].source);
 
-  Node nodeTarget(int idx) =>
+  Node _nodeTarget(int idx) =>
       nodes.firstWhere((node) => node.id == edges[idx].target);
 
   int getNodeIndex(BuildContext context, TapDownDetails details, double zoom,
@@ -312,6 +193,6 @@ class Graph {
     RenderBox box = context.findRenderObject();
     final offset = box.globalToLocal(details.globalPosition);
     return nodes
-        .lastIndexWhere((node) => node.contains(offset, zoom, scaleOffset));
+        .lastIndexWhere((node) => node._contains(offset, zoom, scaleOffset));
   }
 }

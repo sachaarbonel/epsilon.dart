@@ -20,6 +20,11 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         body: Center(
           child: Epsilon(
+            settings: Settings(
+                edgeColor: Colors.redAccent,
+                labelStyle: TextStyle(color: Colors.green),
+                edgeWidth: 1.0,
+                iDStyle: TextStyle(color: Colors.blue[800])),
             onNodeSelect: (Node node) {
               print('touching id ${node.id}');
               print('touching label ${node.label}');
