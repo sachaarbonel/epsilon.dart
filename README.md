@@ -67,6 +67,14 @@ void main() {
 }
 ```
 
+## TODOs 
+
+- [ ] fix center canvas
+- [ ] add support for shaders
+- [ ] add support for legend
+- [ ] abstract draw methods with custom renderer (for example drawing molecules)
+- [ ] add support for graph theory algorithms (for example : on click highlight neighbours)
+
 ## Features and bugs
 
 Please file feature requests and bugs at the [issue tracker][tracker].
