@@ -20,7 +20,8 @@ class Settings {
       this.iDStyle = const TextStyle(color: Colors.blue),
       this.edgeWidth = 1.0,
       this.nodeSelectors, //TODO: handle null
-      this.nodeActiveColor, this. renderID = true}); //TODO: default values
+      this.nodeActiveColor,
+      this.renderID = true}); //TODO: default values
 }
 
 abstract class NodeAttribute {}

@@ -44,11 +44,11 @@ class Graph {
       nodes.firstWhere((node) => node.id == edges[idx].target);
 
   int getNodeIndex(BuildContext context, TapDownDetails details, double zoom,
-      Offset scaleOffset) {
+      Offset scaleOffset,Size size) {
     RenderBox box = context.findRenderObject();
     final offset = box.globalToLocal(details.globalPosition);
     return nodes
-        .lastIndexWhere((node) => node._contains(offset, zoom, scaleOffset));
+        .lastIndexWhere((node) => node._contains(offset, zoom, scaleOffset,size));
   }
 
   factory Graph.fromJson(Map<String, dynamic> json) => Graph(
@@ -119,12 +119,12 @@ class Node {
           : _getAttribute<Color>(type, settings, 'color')
       ..style = PaintingStyle.fill
       ..strokeWidth = 8.0;
-    final center = _recenter(zoom, scaleOffset);
+    final center = _recenter(zoom, scaleOffset,size);
     canvas.drawCircle(center, radius, paint);
   }
 
-  Offset _recenter(double zoom, Offset scaleOffset) =>
-      Offset(position.x, position.y) * zoom + scaleOffset;
+  Offset _recenter(double zoom, Offset scaleOffset, Size size) =>
+      size.center(Offset(position.x, position.y)) * zoom + scaleOffset;
 
   void _drawEdge(
       Canvas canvas, Node target, double zoom, Size size, Offset scaleOffset,
@@ -133,8 +133,8 @@ class Node {
       ..color = settings.edgeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = settings.edgeWidth;
-    final center = _recenter(zoom, scaleOffset);
-    final centerTarget = target._recenter(zoom, scaleOffset);
+    final center = _recenter(zoom, scaleOffset,size);
+    final centerTarget = target._recenter(zoom, scaleOffset,size);
     final path = Path()
       ..moveTo(center.dx, center.dy)
       ..lineTo(centerTarget.dx, centerTarget.dy)
@@ -153,7 +153,7 @@ class Node {
         ..layout()
         ..paint(
             canvas,
-            Offset(position.x + radius + radius / 2, position.y - radius / 4) *
+            size.center(Offset(position.x + radius + radius / 2, position.y - radius / 4))*
                     zoom +
                 scaleOffset); //TODO: extension method on Offset to recenter
     }
@@ -168,14 +168,14 @@ class Node {
         textDirection: TextDirection.ltr)
       ..layout()
       ..paint(
-          canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
+          canvas, size.center(Offset(position.x - 5, position.y - 5)) * zoom + scaleOffset);
          }
 
   }
 
-  bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
+  bool _contains(Offset offset, double zoom, Offset scaleOffset, Size size) =>
       Rect.fromCircle(
-              center: _recenter(zoom, scaleOffset),
+              center: _recenter(zoom, scaleOffset,size),
               radius: radius)
           .contains(offset);
 

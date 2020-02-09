@@ -67,8 +67,9 @@ class _SigmaState extends State<Epsilon> {
   }
 
   void _handleTap(TapDownDetails details) {
+    final size = MediaQuery.of(context).size;
     final int index =
-        widget.graph.getNodeIndex(context, details, _zoom, _offset);
+        widget.graph.getNodeIndex(context, details, _zoom, _offset,size);
     widget.onNodeSelect(widget.graph.nodes[index]);
 
     if (index != -1) {
