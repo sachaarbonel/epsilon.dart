@@ -12,6 +12,7 @@ class Settings {
   final double edgeWidth;
   final List<NodeSelector> nodeSelectors;
   final Color nodeActiveColor;
+  final bool renderID;
 
   Settings(
       {this.edgeColor = Colors.redAccent,
@@ -19,7 +20,7 @@ class Settings {
       this.iDStyle = const TextStyle(color: Colors.blue),
       this.edgeWidth = 1.0,
       this.nodeSelectors, //TODO: handle null
-      this.nodeActiveColor}); //TODO: default values
+      this.nodeActiveColor, this. renderID = true}); //TODO: default values
 }
 
 abstract class NodeAttribute {}

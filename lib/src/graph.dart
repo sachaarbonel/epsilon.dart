@@ -31,7 +31,7 @@ class Graph {
       source._drawLabel(
           canvas, _shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
           settings: settings);
-      source._drawID(canvas, zoom, size, scaleOffset, settings: settings);
+      source._drawID(canvas, settings.renderID, zoom, size, scaleOffset, settings: settings);
     }
   }
 
@@ -159,15 +159,18 @@ class Node {
     }
   }
 
-  void _drawID(Canvas canvas, double zoom, Size size, Offset scaleOffset,
+  void _drawID(Canvas canvas,bool shouldDraw, double zoom, Size size, Offset scaleOffset,
       {Settings settings}) {
-    TextPainter(
+         if (shouldDraw) {
+               TextPainter(
         text: TextSpan(style: settings.iDStyle, text: id),
         textAlign: TextAlign.left,
         textDirection: TextDirection.ltr)
       ..layout()
       ..paint(
           canvas, Offset(position.x - 5, position.y - 5) * zoom + scaleOffset);
+         }
+
   }
 
   bool _contains(Offset offset, double zoom, Offset scaleOffset) =>
