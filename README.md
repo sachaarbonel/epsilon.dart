@@ -67,12 +67,50 @@ void main() {
 }
 ```
 
+Need to display Node with a different shape that a simple circle ? No problem we got you covered. Just define a define renderer like this :
+```dart
+import 'dart:math' as math;
+
+void drawStar(Canvas canvas, double cx, double cy, int spikes, int outerRadius,
+    int innerRadius) {
+  var rot = math.pi / 2 * 3;
+  var x = cx;
+  var y = cy;
+  var step = math.pi / spikes;
+  final paint = Paint()
+    ..strokeWidth = 5
+    ..style = PaintingStyle.stroke
+    ..color = Colors.blue;
+  final path = Path()..moveTo(cx, cy - outerRadius);
+  for (var i = 0; i < spikes; i++) {
+    x = cx + math.cos(rot) * outerRadius;
+    y = cy + math.sin(rot) * outerRadius;
+    path.lineTo(x, y);
+    rot += step;
+
+    x = cx + math.cos(rot) * innerRadius;
+    y = cy + math.sin(rot) * innerRadius;
+    path.lineTo(x, y);
+    rot += step;
+  }
+  path.lineTo(cx, cy - outerRadius);
+  path.close();
+  canvas.drawPath(path, paint);
+}
+
+class MyNodeRenderer extends NodeRenderer {
+  @override
+  void renderNode(Canvas canvas, Offset center, double radius, Paint paint) {
+    drawStar(canvas, center.dx, center.dy, 5, 30, 15);
+  }
+}
+```
+
 ## TODOs 
 
 - [ ] fix center canvas
 - [ ] add support for shaders
 - [ ] add support for legend
-- [ ] abstract draw methods with custom renderer (for example drawing molecules)
 - [ ] add support for graph theory algorithms (for example : on click highlight neighbours)
 
 ## Features and bugs

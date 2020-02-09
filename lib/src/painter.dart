@@ -1,17 +1,35 @@
+import 'package:epsilon/epsilon.dart';
 import 'package:epsilon/src/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:epsilon/src/graph.dart';
 
+abstract class NodeRenderer {
+  void renderNode(Canvas canvas, Offset center, double radius, Paint paint);
+}
+
+class NodeRendererImpl extends NodeRenderer {
+  @override
+  void renderNode(Canvas canvas, Offset center, double radius, Paint paint) {
+    canvas.drawCircle(center, radius, paint);
+  }
+}
 
 class Epsilon extends StatefulWidget {
   final Graph graph;
   final void Function(Node node) onNodeSelect;
   final Settings settings;
+  NodeRenderer _renderer;
 
-  const Epsilon({Key key, this.graph, this.onNodeSelect, this.settings})
+  Epsilon(
+      {Key key,
+      this.graph,
+      this.onNodeSelect,
+      this.settings,
+      NodeRenderer renderer})
       : assert(graph != null, "You must give sigma widget a graph to render"),
         assert(settings != null, "You must pass settings arguments"),
+        _renderer = renderer != null ? renderer : NodeRendererImpl(),
         super(key: key);
 
   @override
@@ -69,7 +87,7 @@ class _SigmaState extends State<Epsilon> {
   void _handleTap(TapDownDetails details) {
     final size = MediaQuery.of(context).size;
     final int index =
-        widget.graph.getNodeIndex(context, details, _zoom, _offset,size);
+        widget.graph.getNodeIndex(context, details, _zoom, _offset, size);
     widget.onNodeSelect(widget.graph.nodes[index]);
 
     if (index != -1) {
@@ -104,6 +122,7 @@ class _SigmaState extends State<Epsilon> {
           onLongPress: _longPressEnabled ? _handleDirectionChange : null,
           child: CustomPaint(
             painter: _GraphPainter(
+              renderer: widget._renderer,
               settings: widget.settings,
               graph: widget.graph,
               selectedIndex: _selectedIndex,
@@ -121,6 +140,7 @@ class _SigmaState extends State<Epsilon> {
     );
   }
 }
+
 class _GraphPainter extends CustomPainter {
   const _GraphPainter({
     this.graph,
@@ -133,7 +153,10 @@ class _GraphPainter extends CustomPainter {
     this.doubleTapEnabled,
     this.longPressEnabled,
     this.settings,
+    this.renderer,
   });
+
+  final NodeRenderer renderer;
   final Settings settings;
   final Graph graph;
   final int selectedIndex;
@@ -149,7 +172,8 @@ class _GraphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    graph.draw(canvas, selectedIndex, zoom, size, offset, settings: settings);
+    graph.draw(canvas, selectedIndex, zoom, size, offset,
+        settings: settings, renderer: renderer);
   }
 
   @override

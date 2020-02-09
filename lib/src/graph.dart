@@ -1,3 +1,4 @@
+import 'package:epsilon/epsilon.dart';
 import 'package:epsilon/src/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
@@ -14,7 +15,7 @@ class Graph {
 
   void draw(Canvas canvas, int selectedIndex, double zoom, Size size,
       Offset scaleOffset,
-      {Settings settings}) {
+      {Settings settings,NodeRenderer renderer}) {
     var i;
     Node source, target;
     for (i = 0; i < edges.length; i += 1) {
@@ -27,7 +28,7 @@ class Graph {
       source = nodes[i];
       source._drawNode(
           canvas, _shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
-          settings: settings);
+          settings: settings, renderer : renderer);
       source._drawLabel(
           canvas, _shouldDraw(i, selectedIndex), zoom, size, scaleOffset,
           settings: settings);
@@ -112,7 +113,7 @@ class Node {
 
   void _drawNode(Canvas canvas, bool shouldRedraw, double zoom, Size size,
       Offset scaleOffset,
-      {Settings settings}) {
+      {Settings settings,NodeRenderer renderer}) {
     final paint = Paint()
       ..color = shouldRedraw
           ? settings.nodeActiveColor
@@ -120,7 +121,8 @@ class Node {
       ..style = PaintingStyle.fill
       ..strokeWidth = 8.0;
     final center = _recenter(zoom, scaleOffset,size);
-    canvas.drawCircle(center, radius, paint);
+    renderer.renderNode(canvas,center,radius,paint );
+    // canvas.drawCircle(center, radius, paint);
   }
 
   Offset _recenter(double zoom, Offset scaleOffset, Size size) =>
