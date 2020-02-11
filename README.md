@@ -1,7 +1,7 @@
 # Epsilon 
 
 Epsilon is a Dart library dedicated to graph drawing.
-"Epsilon" is a reference to the mathematics way to denote the number of edges of a graph.
+"Epsilon" in reference to the mathematics way to denote the number of edges of a graph.
 
 ![20200209_210252.gif](20200209_210252.gif)
 
