@@ -116,6 +116,8 @@ class MyNodeRenderer extends NodeRenderer {
 - [ ] add support for shaders
 - [ ] add support for legend
 - [ ] add support for graph theory algorithms (for example : on click highlight neighbours)
+- [ ] support some physics
+- [ ] add possibility to edit nodes on the fly (add, delete, remove, attach edge to another node)
 
 ## Features and bugs
 
