@@ -3,6 +3,9 @@
 Epsilon is a Dart library dedicated to graph drawing.
 "Epsilon" is a reference to the mathematics way to denote the number of edges of a graph.
 
+![20200209_210252.gif](20200209_210252.gif)
+
+
 ## Usage
 
 A simple usage example:
@@ -66,6 +69,7 @@ void main() {
   runApp(MyApp());
 }
 ```
+
 
 Need to display Node with a different shape that a simple circle ? No problem we got you covered. Just define a define renderer like this :
 ```dart
